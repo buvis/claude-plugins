@@ -1,0 +1,15 @@
+{
+  "name": "buvis-plugins",
+  "owner": { "name": "buvis" },
+  "plugins": [
+    {
+      "name": "warden",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/buvis/claude-warden.git"
+      },
+      "description": "Smart command safety filter with Python code scanning",
+      "version": "2.3.0"
+    }
+  ]
+}
