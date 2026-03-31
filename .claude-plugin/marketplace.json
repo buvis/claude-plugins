@@ -9,7 +9,7 @@
         "url": "https://github.com/buvis/claude-warden.git"
       },
       "description": "Smart command safety filter with Python code scanning",
-      "version": "0.5.0"
+      "version": "0.6.0"
     }
   ]
 }
