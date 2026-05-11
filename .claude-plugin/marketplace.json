@@ -21,6 +21,15 @@
       },
       "description": "Health-check and audit skills for Claude Code: security, permissions, hooks, settings, MCP, plugins, memory, sessions, plus an orchestrator that runs them all and produces a remediation plan",
       "version": "0.1.1"
+    },
+    {
+      "name": "strunk",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/buvis/claude-strunk.git"
+      },
+      "description": "Code-craft skills for Claude Code: idiomatic patterns and disciplined testing for Python, Rust, and Svelte",
+      "version": "0.1.0"
     }
   ]
 }
