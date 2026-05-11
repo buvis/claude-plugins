@@ -29,7 +29,7 @@
         "url": "https://github.com/buvis/claude-strunk.git"
       },
       "description": "Code-craft skills for Claude Code: idiomatic patterns and disciplined testing for Python, Rust, and Svelte",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ]
 }
