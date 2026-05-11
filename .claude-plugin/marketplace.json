@@ -39,6 +39,15 @@
       },
       "description": "Git workflow skills for Claude Code: branch catchup, upstream sync, conflict resolution, CI watching, GitHub issue sync, and dependency PR triage.",
       "version": "0.1.0"
+    },
+    {
+      "name": "aegis",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/buvis/claude-aegis.git"
+      },
+      "description": "PreToolUse safety net: five hooks that block bash-over-tool, dev/local redirects, suppression markers, weakened linter configs, and non-conventional commits.",
+      "version": "0.1.0"
     }
   ]
 }
