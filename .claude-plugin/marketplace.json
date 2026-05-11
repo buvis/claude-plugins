@@ -30,6 +30,15 @@
       },
       "description": "Code-craft skills for Claude Code: idiomatic patterns and disciplined testing for Python, Rust, and Svelte",
       "version": "0.1.1"
+    },
+    {
+      "name": "git-ferry",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/buvis/claude-git-ferry.git"
+      },
+      "description": "Git workflow skills for Claude Code: branch catchup, upstream sync, conflict resolution, CI watching, GitHub issue sync, and dependency PR triage.",
+      "version": "0.1.0"
     }
   ]
 }
