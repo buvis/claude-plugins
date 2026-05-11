@@ -1,6 +1,8 @@
 {
   "name": "buvis-plugins",
-  "owner": { "name": "buvis" },
+  "owner": {
+    "name": "buvis"
+  },
   "plugins": [
     {
       "name": "warden",
@@ -18,7 +20,7 @@
         "url": "https://github.com/buvis/claude-audit-suite.git"
       },
       "description": "Health-check and audit skills for Claude Code: security, permissions, hooks, settings, MCP, plugins, memory, sessions, plus an orchestrator that runs them all and produces a remediation plan",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ]
 }
