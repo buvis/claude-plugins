@@ -20,7 +20,7 @@
         "url": "https://github.com/buvis/claude-checkup.git"
       },
       "description": "Health-check and audit skills for Claude Code: security, permissions, hooks, settings, MCP, plugins, memory, sessions, plus an orchestrator that runs them all and produces a remediation plan",
-      "version": "0.11.1"
+      "version": "0.1.2"
     },
     {
       "name": "strunk",
@@ -29,7 +29,7 @@
         "url": "https://github.com/buvis/claude-strunk.git"
       },
       "description": "Code-craft skills for Claude Code: idiomatic patterns and disciplined testing for Python, Rust, and Svelte",
-      "version": "0.11.1"
+      "version": "0.1.3"
     },
     {
       "name": "git-ferry",
@@ -38,7 +38,7 @@
         "url": "https://github.com/buvis/claude-git-ferry.git"
       },
       "description": "Git workflow skills for Claude Code: branch catchup, upstream sync, conflict resolution, CI watching, GitHub issue sync, and dependency PR triage.",
-      "version": "0.11.1"
+      "version": "0.2.0"
     },
     {
       "name": "aegis",
@@ -47,7 +47,7 @@
         "url": "https://github.com/buvis/claude-aegis.git"
       },
       "description": "PreToolUse safety net: five hooks that block bash-over-tool, dev/local redirects, suppression markers, weakened linter configs, and non-conventional commits.",
-      "version": "0.11.1"
+      "version": "0.1.5"
     }
   ]
 }
