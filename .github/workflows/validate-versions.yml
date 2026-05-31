@@ -1,0 +1,26 @@
+name: validate-versions
+
+# Catch the version-clobber bug: every version in marketplace.json must match
+# the real upstream .claude-plugin/plugin.json of each plugin repo.
+on:
+  push:
+    paths:
+      - '.claude-plugin/marketplace.json'
+      - 'scripts/validate-versions.mjs'
+      - '.github/workflows/validate-versions.yml'
+  pull_request:
+    paths:
+      - '.claude-plugin/marketplace.json'
+      - 'scripts/validate-versions.mjs'
+      - '.github/workflows/validate-versions.yml'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-versions.mjs
