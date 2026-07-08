@@ -1,0 +1,7 @@
+# Claude Code local working documents
+dev/local/
+.claude/
+.serena/
+
+# OS
+.DS_Store
