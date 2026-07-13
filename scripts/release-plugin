@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+# Release a buvis Claude Code plugin - shared logic for all plugin repos.
+#
+# Called from a plugin repo's dev/bin/release shim with CWD = that repo root:
+#   dev/bin/release [patch|minor|major]   (default: patch)
+#
+# Bumps the version in plugin.json, the repo's self-ref marketplace.json, and
+# package.json (when present), stamps CHANGELOG.md, commits, tags v$VERSION,
+# pushes, then bumps ONLY this plugin's entry in the central marketplace.json
+# in this repo and pushes it - aborting if the stamp touched any other
+# plugin's entry (guard against the clobber that hit warden releases in 2026).
+#
+# Per-repo extension points, run when present and executable:
+#   dev/bin/release-checks   before the bump: tests, skill validation
+#   dev/bin/release-build    after the bump, before the commit: build artifacts
+
+set -euo pipefail
+
+BUMP="${1:-patch}"
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MARKETPLACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+MARKETPLACE="$MARKETPLACE_ROOT/.claude-plugin/marketplace.json"
+
+REPO_ROOT="$PWD"
+PLUGIN_JSON="$REPO_ROOT/.claude-plugin/plugin.json"
+SELF_MARKETPLACE="$REPO_ROOT/.claude-plugin/marketplace.json"
+CHANGELOG="$REPO_ROOT/CHANGELOG.md"
+PACKAGE_JSON="$REPO_ROOT/package.json"
+
+CURRENT_STEP=""
+on_error() {
+  local exit_code=$?
+  local line=$1
+  echo "" >&2
+  [ -n "$CURRENT_STEP" ] && echo "[release] FAILED during: $CURRENT_STEP" >&2
+  echo "[release] exit $exit_code at line $line" >&2
+  exit "$exit_code"
+}
+trap 'on_error $LINENO' ERR
+
+step() {
+  CURRENT_STEP="$1"
+  echo "[release] $CURRENT_STEP"
+}
+
+case "$BUMP" in
+  patch|minor|major) ;;
+  *) echo "Usage: $0 [patch|minor|major]" >&2; exit 1 ;;
+esac
+
+# --- Preflight ---
+
+step "checking required tools (jq, git)"
+for cmd in jq git; do
+  command -v "$cmd" >/dev/null || { echo "Error: $cmd not in PATH" >&2; exit 1; }
+done
+
+step "reading plugin name from .claude-plugin/plugin.json"
+[ -f "$PLUGIN_JSON" ] || { echo "Error: $PLUGIN_JSON not found - run via the repo's dev/bin/release shim" >&2; exit 1; }
+PLUGIN_NAME=$(jq -r '.name // empty' "$PLUGIN_JSON")
+[ -n "$PLUGIN_NAME" ] || { echo "Error: no .name in $PLUGIN_JSON" >&2; exit 1; }
+
+step "checking marketplace repo at $MARKETPLACE_ROOT"
+[ -f "$MARKETPLACE" ] || { echo "Error: $MARKETPLACE not found" >&2; exit 1; }
+[ -z "$(git -C "$MARKETPLACE_ROOT" status --porcelain)" ] || { echo "Error: marketplace repo has uncommitted changes" >&2; exit 1; }
+
+step "checking working tree is clean"
+if [ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]; then
+  echo "Error: working tree has uncommitted changes" >&2
+  git -C "$REPO_ROOT" status --short >&2
+  exit 1
+fi
+
+step "checking CHANGELOG.md has [Unreleased] entries"
+grep -q '^## \[Unreleased\]' "$CHANGELOG" || { echo "Error: no [Unreleased] section in CHANGELOG.md" >&2; exit 1; }
+UNRELEASED=$(awk '/^## \[Unreleased\]/{found=1; next} /^## \[/{exit} found{print}' "$CHANGELOG")
+echo "$UNRELEASED" | grep -q '^### ' || { echo "Error: [Unreleased] section empty - add entries before releasing" >&2; exit 1; }
+
+if [ -x "$REPO_ROOT/dev/bin/release-checks" ]; then
+  step "running dev/bin/release-checks"
+  "$REPO_ROOT/dev/bin/release-checks"
+fi
+
+# --- Compute new version ---
+
+step "computing new version ($BUMP)"
+CURRENT=$(jq -r .version "$PLUGIN_JSON")
+IFS=. read -r MAJ MIN PAT <<< "$CURRENT"
+case "$BUMP" in
+  patch) PAT=$((PAT + 1)) ;;
+  minor) MIN=$((MIN + 1)); PAT=0 ;;
+  major) MAJ=$((MAJ + 1)); MIN=0; PAT=0 ;;
+esac
+VERSION="$MAJ.$MIN.$PAT"
+DATE=$(date +%Y-%m-%d)
+echo "[release]   $CURRENT -> $VERSION"
+
+# --- Release ---
+
+step "stamping CHANGELOG.md with v$VERSION ($DATE)"
+awk -v ver="$VERSION" -v date="$DATE" '
+  /^## \[Unreleased\]/ { print; print ""; print "## [" ver "] - " date; next }
+  { print }
+' "$CHANGELOG" > "$CHANGELOG.tmp"
+mv "$CHANGELOG.tmp" "$CHANGELOG"
+
+step "bumping plugin.json to v$VERSION"
+jq --arg v "$VERSION" '.version = $v' "$PLUGIN_JSON" > "$PLUGIN_JSON.tmp"
+mv "$PLUGIN_JSON.tmp" "$PLUGIN_JSON"
+
+step "bumping self-ref marketplace.json to v$VERSION"
+jq --arg name "$PLUGIN_NAME" --arg v "$VERSION" '
+  .plugins = (.plugins | map(if .name == $name then .version = $v else . end))
+' "$SELF_MARKETPLACE" > "$SELF_MARKETPLACE.tmp"
+mv "$SELF_MARKETPLACE.tmp" "$SELF_MARKETPLACE"
+SELF_STAMPED=$(jq -r --arg name "$PLUGIN_NAME" '.plugins[] | select(.name == $name).version' "$SELF_MARKETPLACE")
+[ "$SELF_STAMPED" = "$VERSION" ] || { echo "Error: no entry named $PLUGIN_NAME in $SELF_MARKETPLACE" >&2; exit 1; }
+
+if [ -f "$PACKAGE_JSON" ]; then
+  step "bumping package.json to v$VERSION"
+  jq --arg v "$VERSION" '.version = $v' "$PACKAGE_JSON" > "$PACKAGE_JSON.tmp"
+  mv "$PACKAGE_JSON.tmp" "$PACKAGE_JSON"
+fi
+
+if [ -x "$REPO_ROOT/dev/bin/release-build" ]; then
+  step "running dev/bin/release-build"
+  "$REPO_ROOT/dev/bin/release-build"
+fi
+
+step "committing release v$VERSION"
+git -C "$REPO_ROOT" add -A
+git -C "$REPO_ROOT" commit -m "chore: release v$VERSION"
+
+step "tagging v$VERSION"
+git -C "$REPO_ROOT" tag -a "v$VERSION" -m "v$VERSION"
+
+step "pushing master + tag"
+git -C "$REPO_ROOT" push origin master
+git -C "$REPO_ROOT" push origin "v$VERSION"
+
+step "bumping central marketplace entry for $PLUGIN_NAME to v$VERSION"
+jq --arg name "$PLUGIN_NAME" --arg v "$VERSION" '
+  .plugins = (.plugins | map(if .name == $name then .version = $v else . end))
+' "$MARKETPLACE" > "$MARKETPLACE.tmp"
+mv "$MARKETPLACE.tmp" "$MARKETPLACE"
+
+step "verifying central stamp touched only $PLUGIN_NAME"
+STAMPED=$(jq -r --arg name "$PLUGIN_NAME" '.plugins[] | select(.name == $name).version' "$MARKETPLACE")
+if [ "$STAMPED" != "$VERSION" ]; then
+  echo "Error: no central marketplace entry named $PLUGIN_NAME was stamped to v$VERSION" >&2
+  git -C "$MARKETPLACE_ROOT" checkout -- .claude-plugin/marketplace.json
+  exit 1
+fi
+if ! git -C "$MARKETPLACE_ROOT" show HEAD:.claude-plugin/marketplace.json \
+    | jq --arg name "$PLUGIN_NAME" '[.plugins[] | select(.name != $name)]' \
+    | cmp -s - <(jq --arg name "$PLUGIN_NAME" '[.plugins[] | select(.name != $name)]' "$MARKETPLACE"); then
+  echo "Error: central stamp changed other plugins' entries - reverting, not pushing" >&2
+  git -C "$MARKETPLACE_ROOT" checkout -- .claude-plugin/marketplace.json
+  exit 1
+fi
+
+git -C "$MARKETPLACE_ROOT" add .claude-plugin/marketplace.json
+git -C "$MARKETPLACE_ROOT" commit -m "chore: bump $PLUGIN_NAME to v$VERSION"
+
+step "pushing marketplace"
+git -C "$MARKETPLACE_ROOT" push origin master
+
+CURRENT_STEP=""
+echo ""
+echo "[release] ✓ released $PLUGIN_NAME v$VERSION"
+echo "[release] ✓ central marketplace bumped"
+echo "[release] users can now run: /plugin update $PLUGIN_NAME@buvis-plugins"
