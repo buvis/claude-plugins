@@ -57,6 +57,15 @@
       },
       "description": "Code-quality feedback on every Write/Edit: secrets blocking, ast-grep and fast-linter analysis with blocking classification for stubs and security findings, deferred autofix/format at Stop, and one-time tool nudges.",
       "version": "0.2.1"
+    },
+    {
+      "name": "agoge",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/buvis/claude-agoge.git"
+      },
+      "description": "Product-QA agent pack: seven specialists that run your product instead of reading your diff - journeys, integration, UX, release truth, performance, runtime security - behind one skill that reports what actually ran.",
+      "version": "0.1.0"
     }
   ]
 }
