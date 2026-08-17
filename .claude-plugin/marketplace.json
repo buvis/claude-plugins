@@ -65,7 +65,7 @@
         "url": "https://github.com/buvis/claude-agoge.git"
       },
       "description": "Product-QA agent pack: seven specialists that run your product instead of reading your diff - journeys, integration, UX, release truth, performance, runtime security - behind one skill that reports what actually ran.",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ]
 }
