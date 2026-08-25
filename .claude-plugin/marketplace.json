@@ -71,7 +71,7 @@
       "name": "autopilot",
       "source": {
         "source": "url",
-        "url": "https://github.com/buvis/autopilot.git"
+        "url": "https://github.com/buvis/claude-autopilot.git"
       },
       "description": "PRD-driven build and review pipeline: plans a spec into tasks, implements them one at a time, then runs consensus, blind and doubt reviewers every cycle until the work converges.",
       "version": "0.1.1"
