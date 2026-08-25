@@ -66,6 +66,15 @@
       },
       "description": "Product-QA agent pack: seven specialists that run your product instead of reading your diff - journeys, integration, UX, release truth, performance, runtime security - behind one skill that reports what actually ran.",
       "version": "0.1.2"
+    },
+    {
+      "name": "autopilot",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/buvis/autopilot.git"
+      },
+      "description": "PRD-driven build and review pipeline: plans a spec into tasks, implements them one at a time, then runs consensus, blind and doubt reviewers every cycle until the work converges.",
+      "version": "0.1.0"
     }
   ]
 }
