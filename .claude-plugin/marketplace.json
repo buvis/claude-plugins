@@ -74,7 +74,7 @@
         "url": "https://github.com/buvis/claude-autopilot.git"
       },
       "description": "PRD-driven build and review pipeline: plans a spec into tasks, implements them one at a time, then runs consensus, blind and doubt reviewers every cycle until the work converges.",
-      "version": "0.2.1"
+      "version": "0.4.0"
     }
   ]
 }
