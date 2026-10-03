@@ -47,7 +47,7 @@
         "url": "https://github.com/buvis/claude-aegis.git"
       },
       "description": "PreToolUse safety net: five hooks that block bash-over-tool, working-document redirects, suppression markers, weakened linter configs, and non-conventional commits.",
-      "version": "0.3.2"
+      "version": "0.4.0"
     },
     {
       "name": "loupe",
